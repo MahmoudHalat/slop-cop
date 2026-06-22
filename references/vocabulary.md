@@ -255,6 +255,78 @@ A 2024 PubMed study estimated **at least 13.5% of 2024 biomedical abstracts were
 
 ---
 
+## 2H. Throat-clearing openers and emphasis crutches
+
+Phrases that announce a point or manufacture weight instead of stating the thing. The "Here's the thing" / "the truth is" family signals a point is *coming* rather than making it; the emphasis crutches add gravity without content. Distinct from the throat-clearing *meta-comments* in `patterns.md` #41 ("it's worth noting") — these are openers and standalone punches. Density-gated like everything else: one is forgivable, a cluster is the tell.
+
+| Phrase | Why it's a tell | Replacement | Severity |
+|---|---|---|---|
+| Here's the thing | Announces a point instead of stating it | cut; state the point | H |
+| Here's what / why / the problem... | "Here's" runway before the actual claim | cut the runway | H |
+| The truth is / The uncomfortable truth is | Manufactured candor | cut; just say it | H |
+| It turns out | Faux-discovery framing | cut | M |
+| Let me be clear | Pre-emptive emphasis | cut | H |
+| I'm going to be honest / I'll be honest | Implies the rest was dishonest | cut | M |
+| Can we talk about | Faux-conversational opener | cut | M |
+| Let that sink in | Emphasis crutch | cut | H |
+| Make no mistake | Emphasis crutch | cut | H |
+| Full stop. / Period. | Manufactured finality | cut | H |
+| This matters because | Announces importance | state the reason directly | M |
+| Here's why that matters | Same | cut; give the reason | M |
+
+**Audit instruction:** Scanner catches the full list. Each is a candidate; a singleton in a long human piece is L-weight in practice (density gating), a cluster is the signal.
+
+---
+
+## 2I. Business-speak clichés
+
+Corporate verbs and idioms AI reaches for by default. Each has a plain replacement. These appear in human business writing too — severity is M and density rules, so one "moving forward" doesn't doom a piece, but three clichés in a paragraph do.
+
+| Phrase | Replacement | Severity |
+|---|---|---|
+| lean into | accept, commit to | M |
+| double down (on) | commit, increase | M |
+| circle back | return to, revisit | M |
+| take a step back | reconsider | M |
+| moving forward / going forward | next, from now on | M |
+| on the same page | agreed, aligned | M |
+| move the needle | make a difference | M |
+| low-hanging fruit | the easy wins | M |
+| drill down | examine, look closer | M |
+| deep dive / deep-dive | analysis, close look | M |
+| unpack (the / this) | explain, break down | M |
+
+**Audit instruction:** Replace and re-read. If the sentence is unchanged or sharper, the cliché was filler.
+
+---
+
+## 2J. Meta-commentary labels and stock phrases
+
+Label-style asides and recycled one-liners. The labels announce a beat ("here comes the surprising part") instead of delivering it; the stock phrases are dead on arrival from overuse.
+
+| Phrase | Why it's a tell | Severity |
+|---|---|---|
+| Plot twist: | Announces a beat instead of delivering it | M |
+| Spoiler: / Spoiler alert: | Same | M |
+| Hint: | Coy meta-aside | M |
+| Fun fact: / Pro tip: | Listicle-voice label | M |
+| ...a feature, not a bug | Dead stock phrase | M |
+| This is what X (actually) looks like | Show-don't-tell announcement (see `patterns.md` #46) | M |
+
+**Audit instruction:** Scanner catches the labels and the two stock constructions. Cut the label and keep the content, or rewrite the stock phrase into a specific claim.
+
+---
+
+## 2K. Sweeping absolutes / lazy extremes
+
+Universal quantifiers used in place of a specific claim. One is fine; a cluster signals the writer is generalizing rather than observing. **Density-gated** — the scanner flags a paragraph with 3+ absolutes, not every instance.
+
+`everyone`, `everybody`, `everything`, `always`, `never`, `nobody`, `no one`, `nothing`, `all of us`, `none of us`
+
+**Fix:** Replace the absolute with the specific scope. "Everyone knows" → "Every PM I've talked to knows." "It never works" → "It hasn't worked in the three rollouts I've seen." Severity: L per instance, M when clustered (3+ in one paragraph).
+
+---
+
 ## How to use this list
 
 1. Run the scanner first — `scripts/scan.py` flags every instance mechanically across all categories.

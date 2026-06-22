@@ -53,6 +53,7 @@ Writers, editors, and structured catalogs. Softer evidence individually, but agr
 - **tropes.fyi: full markdown reference** — Complete catalog in markdown format. [Link](https://tropes.fyi/tropes-md)
 - **agentkit AI tropes (sentence-structure)** — Reference list of sentence-level AI tells; source for anaphora abuse and dramatic countdown. [Link](https://github.com/joshuadavidthomas/agentkit/blob/main/skills/ai-writing-tropes/references/sentence-structure.md)
 - **avoid-ai-writing skill (36 patterns)** — Conor Bronsdon's catalog of patterns to avoid in AI prose. [Link](https://github.com/conorbronsdon/avoid-ai-writing)
+- **stop-slop skill** — Hardik Pandya's AI-tell removal skill. Source for vague declaratives (patterns #46), false agency (#47), throat-clearing openers, emphasis crutches, business-speak clichés, meta-commentary labels, and sweeping absolutes (vocabulary.md 2H–2K). [Link](https://github.com/hardikpandya/stop-slop)
 - **Beutler Ink: How to spot AI writing** — Practitioner guide; coined "compulsive summary" terminology. [Link](https://www.beutlerink.com/blog/how-to-spot-ai-writing)
 - **Olivia Cal: 17 AI writing tells** — Editorial perspective on common giveaways. [Link](https://www.oliviacal.com/post/ai-writing-tells)
 - **Hyacinth.ai: 42 phrases AI bots can't resist** — Phrase-level catalog with examples. [Link](https://hyacinth.ai/spot-ai-written-content-phrases/)

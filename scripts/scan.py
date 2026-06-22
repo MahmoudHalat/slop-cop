@@ -233,6 +233,10 @@ MAGIC_ADVERBS = [
     "deeply",
     "quietly",
     "subtly",
+    "inherently",
+    "inevitably",
+    "importantly",
+    "crucially",
 ]
 
 # Buzzwords for density check (3+ in one paragraph = flag)
@@ -300,7 +304,6 @@ PERFORMATIVE_OPENINGS = [
     r"^\s*Are you struggling with",
     r"^\s*In today'?s fast-paced",
     r"^\s*In today'?s (?:world|landscape|digital age)",
-    r"^\s*Here'?s the thing\b",
     r"^\s*I'?ll be brief",
     r"^\s*When I read\b.*I closed",
     r"^\s*Most\s+\w+\s+\w+\s+(?:waste|won'?t)",
@@ -474,6 +477,93 @@ HISTORICAL_ANALOGY = re.compile(
 
 # 38. Dead-metaphor repetition — count cliché metaphor reuse
 DEAD_METAPHORS = ["journey", "landscape", "tapestry", "ecosystem", "realm", "beacon", "symphony", "tide"]
+
+# =============================================================================
+# STOP-SLOP-DERIVED ADDITIONS (v2)
+# Tells confirmed missing via a baseline gap-test against hardikpandya/stop-slop.
+# Documented in patterns.md Group F (46-47) and vocabulary.md 2H-2K.
+# All regexes use non-capturing groups so re.findall returns full-match strings.
+# =============================================================================
+
+# 2H. Throat-clearing openers — announce a point instead of stating it.
+THROATCLEAR_OPENERS_H = [
+    r"\bHere'?s the thing\b",
+    r"\bHere'?s what (?:I|you|we|they|it|makes|happens|matters)\b",
+    r"\bHere'?s why\b",
+    r"\bHere'?s the (?:problem|catch|kicker|deal|truth|reality|rub)\b",
+    r"\bThe (?:uncomfortable |hard |simple |real |honest )?truth is\b",
+    r"\bIt turns out\b",
+    r"\bLet me be clear\b",
+    r"\bI'?m going to be honest\b",
+    r"\bI'?ll be honest\b",
+    r"\bI'?ll say it again\b",
+    r"\bCan we talk about\b",
+    r"\bThe real (?:question|issue|problem) (?:is|here)\b",
+]
+
+# 2H (cont). Emphasis crutches — manufactured weight, no added meaning.
+EMPHASIS_CRUTCH_H = [
+    r"\bLet that sink in\b",
+    r"\bMake no mistake\b",
+    r"(?:^|[.!?]\s+)(?:Full stop|Period)\.",
+    r"\bThis matters because\b",
+    r"\bHere'?s why that matters\b",
+    r"\bRead that again\b",
+]
+
+# 2I. Business-speak clichés (phrase hits).
+BUSINESS_CLICHES_M = [
+    "lean into", "leaning into", "leans into",
+    "double down", "doubling down", "doubles down",
+    "circle back", "circling back",
+    "take a step back", "taking a step back", "stepping back",
+    "moving forward", "going forward",
+    "on the same page",
+    "move the needle", "moves the needle",
+    "low-hanging fruit",
+    "drill down", "drilling down",
+    "deep dive", "deep-dive",
+    "unpack the", "unpacks the", "unpacking the",
+]
+
+# 2J. Meta-commentary labels and stock phrases.
+META_LABELS_M = [
+    r"\bPlot twist[:!]",
+    r"\bSpoiler(?: alert)?[:!]",
+    r"\bHint:\s",
+    r"\bFun fact[:!]",
+    r"\bPro tip[:!]",
+    r"\b(?:it'?s |is )?a feature,? not a bug\b",
+    r"\bnot a bug,? (?:it'?s|but) a feature\b",
+    r"\bThis is what .{2,40}? (?:actually )?looks like\b",
+]
+
+# 2K. Sweeping absolutes / lazy extremes — vague universals. Density-gated.
+LAZY_EXTREMES = [
+    "everyone", "everybody", "everything", "always", "never",
+    "nobody", "no one", "nothing", "all of us", "none of us",
+]
+
+# 46. Vague declaratives — announce significance without the specific thing.
+VAGUE_DECLARATIVE_H = [
+    r"\bThe stakes (?:are high|could ?n'?t be higher|have never been higher)\b",
+    r"\bThe implications are (?:significant|profound|clear|enormous|staggering|serious)\b",
+    r"\bThe reasons are (?:structural|clear|simple|complex|deep)\b",
+    r"\bThe consequences are (?:real|significant|severe|dire|profound)\b",
+    r"\bThis is the (?:deepest|biggest|hardest|real) (?:problem|issue|question|part)\b",
+    r"\bThe (?:problem|issue|challenge|difference) is (?:structural|real|deep|profound)\b",
+    r"\bThis is genuinely (?:hard|difficult|important)\b",
+]
+
+# 47. False agency — inanimate subject performing a human action.
+FALSE_AGENCY_M = [
+    r"\bthe data (?:tells|told|knows|wants|decides|speaks|demands)\b",
+    r"\bthe numbers (?:tell|don'?t lie|never lie|speak)\b",
+    r"\bthe (?:metrics|results|figures|charts|graphs) (?:tell|speak|reveal|say|show us)\b",
+    r"\bspeaks? for (?:itself|themselves)\b",
+    r"\b(?:grows|writes|builds|solves|fixes) itself\b",
+    r"\bthe (?:market|algorithm|system|code) (?:decides|knows|wants|chooses)\b",
+]
 
 # =============================================================================
 # MODEL FINGERPRINT MARKERS
@@ -955,6 +1045,26 @@ def find_buzzword_density(paragraphs, threshold=3):
             if n:
                 count += n
                 found.append((bw, n))
+        if count >= threshold:
+            hits.append((i, count, found))
+    return hits
+
+
+def find_lazy_extremes(paragraphs, threshold=3):
+    """Paragraphs with `threshold`+ sweeping absolutes (everyone/always/never...).
+
+    One absolute is fine; a cluster signals the writer is generalizing rather
+    than observing a specific case. Mirrors find_buzzword_density."""
+    hits = []
+    for i, p in enumerate(paragraphs):
+        count = 0
+        found = []
+        for w in LAZY_EXTREMES:
+            pattern = r"\b" + re.escape(w) + r"\b"
+            n = len(re.findall(pattern, p, flags=re.IGNORECASE))
+            if n:
+                count += n
+                found.append((w, n))
         if count >= threshold:
             hits.append((i, count, found))
     return hits
@@ -1965,6 +2075,9 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
             "copula_avoidance": find_regex_hits(clean, COPULA_AVOIDANCE),
             "ing_tails": ING_TAIL.findall(clean),
             "throat_clearing": find_regex_hits(clean, THROAT_CLEARING),
+            "throatclear_openers": find_regex_hits(clean, THROATCLEAR_OPENERS_H),
+            "emphasis_crutches": find_regex_hits(clean, EMPHASIS_CRUTCH_H),
+            "vague_declaratives": find_regex_hits(clean, VAGUE_DECLARATIVE_H),
             "rhetorical_qa": RHETORICAL_QA.findall(clean),
             "crafted_closer": find_crafted_closer(clean),
             "performative_opening": find_performative_opening(clean),
@@ -2007,6 +2120,10 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
                 for w in DEAD_METAPHORS
                 if len(re.findall(r"\b" + w + r"\b", clean, flags=re.IGNORECASE)) >= 3
             ],
+            "business_cliches": find_phrase_hits(clean, BUSINESS_CLICHES_M),
+            "meta_labels": find_regex_hits(clean, META_LABELS_M),
+            "false_agency": find_regex_hits(clean, FALSE_AGENCY_M),
+            "lazy_extremes": find_lazy_extremes(paragraphs),
         },
         "low": {
             "magic_adverbs": find_phrase_hits(clean, MAGIC_ADVERBS),
@@ -2043,6 +2160,9 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
         + len(result["high"]["negation_reversals"])
         + len(result["high"]["cross_sentence_negation"])
         + len(result["high"]["short_sentence_clusters_h"])
+        + sum(c for _, c, _ in result["high"]["throatclear_openers"])
+        + sum(c for _, c, _ in result["high"]["emphasis_crutches"])
+        + sum(c for _, c, _ in result["high"]["vague_declaratives"])
     )
     medium_count = (
         len(result["medium"]["dramatic_countdown"])
@@ -2070,6 +2190,10 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
         + sum(c for _, c, _ in result["medium"]["vapid_analogies"])
         + len(result["medium"]["historical_analogy_stacking"])
         + len(result["medium"]["dead_metaphor_repetition"])
+        + sum(c for _, c in result["medium"]["business_cliches"])
+        + sum(c for _, c, _ in result["medium"]["meta_labels"])
+        + sum(c for _, c, _ in result["medium"]["false_agency"])
+        + len(result["medium"]["lazy_extremes"])
     )
     low_count = (
         sum(c for _, c in result["low"]["magic_adverbs"])
@@ -2311,6 +2435,18 @@ def format_human(result):
         lines.append("Throat-clearing meta-comments:")
         for pat, count, sample in h["throat_clearing"]:
             lines.append(f"  - \"{sample}\" ×{count}")
+    if h["throatclear_openers"]:
+        lines.append("Throat-clearing openers (\"here's the thing\" / \"the truth is\"):")
+        for pat, count, sample in h["throatclear_openers"]:
+            lines.append(f"  - \"{sample}\" ×{count}")
+    if h["emphasis_crutches"]:
+        lines.append("Emphasis crutches (\"let that sink in\" / \"make no mistake\"):")
+        for pat, count, sample in h["emphasis_crutches"]:
+            lines.append(f"  - \"{sample}\" ×{count}")
+    if h["vague_declaratives"]:
+        lines.append("Vague declaratives (significance without the specific thing):")
+        for pat, count, sample in h["vague_declaratives"]:
+            lines.append(f"  - \"{sample}\" ×{count}")
     if h["rhetorical_qa"]:
         lines.append(f"Self-posed rhetorical Q+A: {len(h['rhetorical_qa'])}")
     if h["performative_opening"]:
@@ -2411,6 +2547,23 @@ def format_human(result):
             lines.append(f"  - \"{sample}\" ×{count}")
     if m["whether_or_openers"]:
         lines.append(f"'Whether you're X or Y' openers: {m['whether_or_openers']}")
+    if m["business_cliches"]:
+        lines.append("Business-speak clichés:")
+        for phrase, count in m["business_cliches"]:
+            lines.append(f"  - \"{phrase}\" ×{count}")
+    if m["meta_labels"]:
+        lines.append("Meta-commentary labels / stock phrases:")
+        for pat, count, sample in m["meta_labels"]:
+            lines.append(f"  - \"{sample}\" ×{count}")
+    if m["false_agency"]:
+        lines.append("False agency (inanimate actor — name the human):")
+        for pat, count, sample in m["false_agency"]:
+            lines.append(f"  - \"{sample}\" ×{count}")
+    if m["lazy_extremes"]:
+        lines.append("Sweeping absolutes (3+ in one paragraph):")
+        for idx, count, found in m["lazy_extremes"]:
+            words = ", ".join(f"{w}×{n}" for w, n in found)
+            lines.append(f"  - Para {idx+1}: {count} absolutes ({words})")
     lines.append("")
 
     # Low severity

@@ -1,6 +1,6 @@
 # AI Slop Patterns — Rhetorical and Structural
 
-These 45 patterns reliably make prose read as AI-generated. Each is documented in published research, in editorial takedowns, or both. They're rhetorically tidy, they sound polished, and once you see them you can't unsee them. Eliminate them at the editing pass.
+These 47 patterns reliably make prose read as AI-generated. Each is documented in published research, in editorial takedowns, or both. They're rhetorically tidy, they sound polished, and once you see them you can't unsee them. Eliminate them at the editing pass.
 
 This file is the qualitative-pass reference. The mechanical scanner (`scripts/scan.py`) catches what regex can; the rest requires reading the draft against this list.
 
@@ -11,6 +11,7 @@ The patterns are organized into 5 groups by kind of tell:
 - **Group C: Voice / register tells** (10) — what the prose performs
 - **Group D: Decorative content tells** (10) — filler that adds no substance
 - **Group E: Density / quantitative** (3) — patterns that show up as count or ratio
+- **Group F: Abstraction & agency tells** (2) — telling-not-showing and misattributed agency
 
 ## Table of contents
 
@@ -68,6 +69,10 @@ The patterns are organized into 5 groups by kind of tell:
 43. [Em-dash overuse](#43-em-dash-overuse)
 44. [Buzzword stacking](#44-buzzword-stacking)
 45. [Listicle transitions](#45-listicle-transitions)
+
+### Group F — Abstraction & agency tells
+46. [Vague declaratives / abstract significance](#46-vague-declaratives--abstract-significance)
+47. [False agency / inanimate actor](#47-false-agency--inanimate-actor)
 
 ---
 
@@ -1028,15 +1033,59 @@ The patterns are organized into 5 groups by kind of tell:
 
 ---
 
+## Group F — Abstraction & agency tells
+
+### 46. Vague declaratives / abstract significance
+
+**Pattern:** A sentence announces that something is important, deep, structural, or high-stakes without naming the specific thing. "The stakes are high." "The implications are significant." "The reasons are structural." "This is the deepest problem." The show-don't-tell cousin announces a *quality* instead of demonstrating it: "This is what real leadership looks like," "This is genuinely hard."
+
+**Examples:**
+- "The stakes are high. The implications are significant."
+- "The reasons are structural."
+- "This is what leadership actually looks like."
+
+**Why it's a tell:** AI reaches for abstract significance-claims as filler when it has no specific content behind them. The sentence performs depth without supplying any. A writer who *has* the specific stake states the specific stake; the bare declarative is what's left when there's nothing concrete to say. Related to stake inflation (#31) but flatter — not futuristic hype, just empty gravity. Catalogued in stop-slop as "vague declaratives."
+
+**Fix:** Name the specific thing. "The stakes are high" → "Ship this late and we lose the Q3 launch and the $400K riding on it." If you can't name it, cut the sentence — it carries no information.
+
+**Severity:** H
+
+**Sources:** [stop-slop](https://github.com/hardikpandya/stop-slop)
+
+**Audit instruction:** Scanner catches the common forms ("the stakes are high", "the implications are significant", "the reasons are structural", "this is what X looks like", "this is genuinely hard"). For each, ask: does the sentence name the specific stake / implication / reason, or only assert that one exists? If it only asserts, flag.
+
+---
+
+### 47. False agency / inanimate actor
+
+**Pattern:** An inanimate subject is given a human action. "The data tells us." "The numbers don't lie." "Complaints become fixes." "The backlog grows itself." The actual actor — the analyst, the engineer, the team — is hidden behind the object.
+
+**Examples:**
+- "The data tells us what to build next."
+- "These complaints become fixes."
+- "The results speak for themselves."
+
+**Why it's a tell:** Distinct from passive voice (which drops the actor entirely); false agency promotes the *object* into the actor's seat. AI defaults to it because it reads punchy and confident while dodging the question of who actually did the thing. Real writers name the human. Catalogued in stop-slop as "false agency."
+
+**Fix:** Name the human actor. "The data tells us X" → "After reading the data, the team chose X." "Complaints become fixes" → "Support triages complaints; engineering turns the top ten into tickets."
+
+**Severity:** M
+
+**Sources:** [stop-slop](https://github.com/hardikpandya/stop-slop)
+
+**Audit instruction:** Scanner catches common inanimate-subject + human-verb signatures ("the data tells", "the numbers don't lie", "speaks for itself", "grows itself"). Reading catches the rest — look for any sentence where an abstraction (data, market, code, process) is the grammatical subject of a verb only a person can really do.
+
+---
+
 ## How to use this file
 
-**During audit:** Walk through groups A through E in order. For each pattern, scan the draft for instances. Flag with quote + severity. After all 45 passes, you have a complete violation list. The scanner catches the mechanically-detectable patterns; reading is required for the qualitative ones (anaphora, symmetry, the actual force of metaphors, etc.).
+**During audit:** Walk through groups A through F in order. For each pattern, scan the draft for instances. Flag with quote + severity. After all 47 passes, you have a complete violation list. The scanner catches the mechanically-detectable patterns; reading is required for the qualitative ones (anaphora, symmetry, the actual force of metaphors, etc.).
 
 **During compose:** Read the list before drafting to prime awareness. Read it again before delivery as a final-pass check. Most patterns survive only the second pass — first-draft prose contains them and the editing pass removes them.
 
 **Severity guidelines:**
-- **High severity (H):** always cut. These actively make the writing read as AI. Em dashes in clusters, sycophancy, grandiose framing, copula avoidance, knowledge-cutoff leakage, compulsive summary, vague-authority weasels, listicle transitions, performative openers, hedge stacking, magic adverbs, throat-clearing, fabricated case studies, cliché metaphors, present-participle "-ing" tails, tricolon abuse, anaphora abuse, negation reversals, dramatic countdown, self-posed Q+A, stake inflation, acknowledgment-loop opening, punchy fragment clusters, buzzword stacking.
-- **Medium severity (M):** cut unless context-justified. Symmetrical sentence pairs, two-word punchlines, setup-reveal, crafted closers, "While X, Y" opener, hedged superlatives, false range, "X meets Y", whether-or openers, both-sides-ism, false concession, "real" tic, pedagogical voice, royal-we, servile uplift, vapid analogies, invented compound concepts, dead-metaphor repetition, historical analogy stacking, synonym cycling.
+- **High severity (H):** always cut. These actively make the writing read as AI. Em dashes in clusters, sycophancy, grandiose framing, copula avoidance, knowledge-cutoff leakage, compulsive summary, vague-authority weasels, listicle transitions, performative openers, hedge stacking, magic adverbs, throat-clearing, throat-clearing openers ("here's the thing"), emphasis crutches ("let that sink in"), vague declaratives, fabricated case studies, cliché metaphors, present-participle "-ing" tails, tricolon abuse, anaphora abuse, negation reversals, dramatic countdown, self-posed Q+A, stake inflation, acknowledgment-loop opening, punchy fragment clusters, buzzword stacking.
+- **Medium severity (M):** cut unless context-justified. Symmetrical sentence pairs, two-word punchlines, setup-reveal, crafted closers, "While X, Y" opener, hedged superlatives, false range, "X meets Y", whether-or openers, both-sides-ism, false concession, "real" tic, pedagogical voice, royal-we, servile uplift, vapid analogies, invented compound concepts, dead-metaphor repetition, historical analogy stacking, synonym cycling, false agency, business-speak clichés, meta-commentary labels, sweeping absolutes (clustered).
 - **Low severity (L):** noted in audit but doesn't down-score. Em dashes alone (1–2 in a long piece), individual decorative adverbs in narrow context.
 
 If a draft has 5+ H-severity violations within 500 words, recommend a rewrite rather than spot-fixes. See `calibration.md` for density-scoring details.

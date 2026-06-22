@@ -111,8 +111,8 @@ Two tests. Each one has its own list of patterns the scanner pulls from.
 
 | Layer | Coverage | Source |
 |---|---|---|
-| **Patterns** | 45 patterns in 5 groups: rhetorical shapes, sentence-level tells, voice, decoration, density | [`references/patterns.md`](ai-slop-detector/references/patterns.md) |
-| **Words** | About 150 phrases in 7 groups: AI verbs, cliché metaphors, empty boosters, sucking up, vague authority, connector words, spike words | [`references/vocabulary.md`](ai-slop-detector/references/vocabulary.md) |
+| **Patterns** | 47 patterns in 6 groups: rhetorical shapes, sentence-level tells, voice, decoration, density, abstraction & agency | [`references/patterns.md`](ai-slop-detector/references/patterns.md) |
+| **Words** | About 195 phrases in 11 groups: AI verbs, cliché metaphors, empty boosters, sucking up, vague authority, connector words, spike words, throat-clearing openers, business buzzwords, label asides, blanket absolutes | [`references/vocabulary.md`](ai-slop-detector/references/vocabulary.md) |
 | **Format** | About 33 in 5 groups: markdown shapes, title shapes, section shapes, repeats, white-space junk | [`references/formatting-tells.md`](ai-slop-detector/references/formatting-tells.md) |
 
 ### Comprehension test
@@ -122,7 +122,7 @@ Two tests. Each one has its own list of patterns the scanner pulls from.
 | **Patterns** | 35 patterns in 5 groups: too much packed in, short forms, expert blind spots, weak structure, hard sentences | [`references/comprehension.md`](ai-slop-detector/references/comprehension.md) |
 | **Reading scores** | 8 reading-grade tests (Flesch, Flesch-Kincaid, SMOG, Coleman-Liau, Dale-Chall, lexical density, sentence shape, passive voice) plus 3 fresh-reader checks (short forms, names, numbers) | [`references/readability-metrics.md`](ai-slop-detector/references/readability-metrics.md) |
 
-A short list of the 20 worst AI tells and 10 worst comprehension tells lives at the top of [`SKILL.md`](ai-slop-detector/SKILL.md). The skill is useful even before any other file loads.
+A short list of the worst AI tells and comprehension tells lives at the top of [`SKILL.md`](ai-slop-detector/SKILL.md). The skill is useful even before any other file loads.
 
 ## Why two tests
 

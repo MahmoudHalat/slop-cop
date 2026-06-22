@@ -1,6 +1,6 @@
 ---
 name: ai-slop-detector
-description: Universal prose audit. Scores writing on TWO axes — AI-Slop (does this read like AI wrote it?) and Comprehension (can a fresh reader follow this?). Use whenever the user wants to audit, critique, score, or fix prose. Triggers on "audit this", "review this", "is this AI", "is this readable", "does this sound like AI", "humanize this", "make this less AI", "AI slop check", "score this", "detect AI writing", "slop check", "de-slop this", "is this readable", "would a fresh reader follow this", "comprehension check". Also use as a final pre-delivery pass inside other writing skills (cold-email, copywriting, sales-enablement, ad-creative, email-sequence, mahmouds-seo-writer, mahmouds-reddit-strategist, mahmouds-writing-voice). Catches 45 AI-slop patterns + ~150 vocab tells + ~33 formatting tells + 35 comprehension patterns + 8 readability metrics, with density-based scoring on both axes, audience calibration, model fingerprinting, and dual-verdict output.
+description: Universal prose audit. Scores writing on TWO axes — AI-Slop (does this read like AI wrote it?) and Comprehension (can a fresh reader follow this?). Use whenever the user wants to audit, critique, score, or fix prose. Triggers on "audit this", "review this", "is this AI", "is this readable", "does this sound like AI", "humanize this", "make this less AI", "AI slop check", "score this", "detect AI writing", "slop check", "de-slop this", "is this readable", "would a fresh reader follow this", "comprehension check". Also use as a final pre-delivery pass inside other writing skills (cold-email, copywriting, sales-enablement, ad-creative, email-sequence, mahmouds-seo-writer, mahmouds-reddit-strategist, mahmouds-writing-voice). Catches 47 AI-slop patterns + ~195 vocab tells + ~33 formatting tells + 35 comprehension patterns + 8 readability metrics, with density-based scoring on both axes, audience calibration, model fingerprinting, and dual-verdict output.
 ---
 
 # slop-cop
@@ -101,7 +101,7 @@ The scanner outputs:
 
 ### Step 2 — Read against both pattern catalogs
 
-**AI-Slop axis:** Load `references/patterns.md`. Walk through the 45 patterns by group. The scanner catches the mechanically-detectable subset; the rest requires reading.
+**AI-Slop axis:** Load `references/patterns.md`. Walk through the 47 patterns by group. The scanner catches the mechanically-detectable subset; the rest requires reading.
 
 **Comprehension axis:** Load `references/comprehension.md`. Walk through the 35 patterns by group. Roughly 17 are mechanically detectable; the rest require reading. Particularly:
 - **Buried lede / missing thesis** — does the first paragraph tell the reader the point?
@@ -154,7 +154,7 @@ The revision should read as deliverable prose for the target audience.
 
 If you only have time for a quick scan, look for these. Each appears in the highest-density failures.
 
-### AI-Slop (20 most lethal)
+### AI-Slop (most lethal)
 
 **Vocabulary:** delve / delves, tapestry, underscore / underscores, leverage (verb), harness
 
@@ -163,6 +163,8 @@ If you only have time for a quick scan, look for these. Each appears in the high
 **Voice:** "Great question!" (opener sycophancy), "I hope this helps!" (closer sycophancy), "In today's fast-paced world..." (107x more in AI), "As a society, we must..." (royal we), "As of my last update..." (knowledge-cutoff leakage)
 
 **Structural:** "In conclusion / Furthermore / Moreover" (listicle transitions), "It's worth noting that..." (throat-clearing), em dashes in clusters (3+ per 500w), bold-first bullets, "X: A Comprehensive Guide" titles
+
+**Abstraction & agency:** "The stakes are high" / "the implications are significant" (vague declaratives — gravity with no specific thing), "Here's the thing" / "the truth is" / "let that sink in" (throat-clearing openers + emphasis crutches), "the data tells us" / "speaks for itself" (false agency — name the human)
 
 ### Comprehension (10 most lethal)
 
@@ -236,8 +238,8 @@ Read what the task needs.
 
 | File | Read when |
 |---|---|
-| `references/patterns.md` | AI-Slop qualitative pass. The 45 rhetorical/structural patterns. |
-| `references/vocabulary.md` | AI-Slop word-level tells. ~150 items in 7 categories. |
+| `references/patterns.md` | AI-Slop qualitative pass. The 47 rhetorical/structural patterns. |
+| `references/vocabulary.md` | AI-Slop word-level tells. ~195 items in 11 categories. |
 | `references/formatting-tells.md` | AI-Slop formatting checks. ~33 items in 5 categories. |
 | `references/comprehension.md` | Comprehension qualitative pass. The 35 patterns in 5 groups. |
 | `references/readability-metrics.md` | When interpreting the readability panel. The 8 formulas + thresholds + audience targets. |
