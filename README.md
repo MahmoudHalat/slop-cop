@@ -47,7 +47,7 @@ I run it daily, so I find new things every week. A pattern I missed. A false ala
 
 ## Install
 
-One command. The skill drops into your Claude Code skills folder. It wakes up when you say things like *"is this AI"*, *"is this readable"*, *"audit this"*, *"humanize this"*, *"slop check"*.
+One command. The skill drops into your Claude Code skills folder. It runs automatically as a final QA pass on any prose Claude writes for a human reader — emails (internal or external), proposals, reports, blog posts, chat messages — and also wakes up on demand when you say things like *"is this AI"*, *"is this readable"*, *"audit this"*, *"humanize this"*, *"slop check"*.
 
 ```bash
 curl -L https://github.com/MahmoudHalat/slop-cop/releases/latest/download/ai-slop-detector.skill -o /tmp/slop-cop.zip \
