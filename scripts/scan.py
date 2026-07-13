@@ -4,7 +4,7 @@ scan.py - Universal AI-slop + Comprehension scanner (slop-cop, dual axis).
 
 Scans prose on two parallel axes:
 
-1. AI-Slop axis — ~45 rhetorical patterns, ~150 vocabulary tells, ~33 formatting
+1. AI-Slop axis — 47 rhetorical patterns, 200+ vocabulary tells, 33 formatting
    tells. Density score, burstiness, model fingerprint.
 2. Comprehension axis — ~17 mechanically-detectable comprehension patterns plus
    8 readability metrics (Flesch RE, FK Grade, SMOG, Coleman-Liau, Dale-Chall,
@@ -20,6 +20,9 @@ Usage:
     python3 scan.py --genre academic path/to/draft.md
     python3 scan.py --audience marketing path/to/draft.md
     python3 scan.py --strict-em-dash path/to/draft.md
+    python3 scan.py --suggest path/to/draft.md       # rewrite worklist (JSON)
+    python3 scan.py --apply-safe path/to/draft.md     # deterministic safe fixes
+    python3 scan.py --apply-safe --in-place draft.md  # write fixes to the file
     cat draft.md | python3 scan.py
     echo "draft text" | python3 scan.py
 """
@@ -2021,6 +2024,292 @@ def combined_recommendation(slop_verdict, comp_verdict):
     return "Spot-fix the listed items. Reader will follow with minor friction."
 
 
+# =============================================================================
+# REWRITE LAYER — deterministic safe fixes (offset-aware, meaning-preserving)
+#
+# The hybrid rewrite model. This layer applies ONLY unarguable 1:1 swaps that
+# never change meaning (wordy connectives, "utilize" → "use", dash → comma).
+# Every nuanced call — structure, buried claims, voice, negation reversals,
+# context-dependent vocab — is left to the SKILL.md rewrite workflow, which
+# reads the text. Safe fixes SKIP text inside quotes and code, so a word someone
+# is quoting AS an example is never rewritten (the "delve" false-positive).
+# =============================================================================
+
+# Case-preserving 1:1 swaps. Matched on word boundaries, case-insensitively;
+# the replacement inherits the original's capitalization. Every entry here is
+# meaning-preserving in ALL grammatical contexts — that is the bar for "safe".
+# Context-dependent tells (leverage/delve/robust/seamless/synergy, quantifier
+# phrases with pronoun edges) are intentionally excluded and left to judgment.
+SAFE_WORD_SWAPS = {
+    "utilize": "use", "utilizes": "uses", "utilized": "used", "utilizing": "using",
+    "utilise": "use", "utilises": "uses", "utilised": "used", "utilising": "using",
+    "in order to": "to",
+    "due to the fact that": "because",
+    "in the event that": "if",
+    "in spite of the fact that": "although",
+    "for the purpose of": "for",
+    "with regard to": "about",
+    "with respect to": "about",
+    "prior to": "before",
+    "subsequent to": "after",
+    "at this point in time": "now",
+    "at the present time": "now",
+}
+
+# Punctuation normalizations (meaning-preserving).
+SAFE_PUNCT_RULES = [
+    (re.compile(r"\s*—\s*"), ", ", "em dash → comma"),
+    (re.compile(r"\s+–\s+"), ", ", "spaced en dash → comma"),
+    (re.compile(r"(?<!-)\s*--\s*(?!-)"), ", ", "double hyphen → comma"),
+]
+
+
+def _match_case(original, replacement):
+    """Make replacement echo original's capitalization (UPPER / Title / lower)."""
+    if len(original) > 1 and original.isupper():
+        return replacement.upper()
+    if original[:1].isupper():
+        return replacement[:1].upper() + replacement[1:]
+    return replacement
+
+
+def protected_spans(text):
+    """Sorted, merged (start, end) spans that safe fixes must NOT touch: fenced
+    code blocks, inline code, and double-quoted spans (straight + curly). This
+    protects quoted examples — the tool never rewrites a word being quoted AS a
+    tell."""
+    spans = []
+    for pat in (
+        r"```.*?```",              # fenced code
+        r"`[^`\n]+`",              # inline code
+        r"\"[^\"\n]{0,300}\"",     # straight double quotes
+        "“[^”\n]{0,300}”",  # curly double quotes “ ”
+    ):
+        for m in re.finditer(pat, text, flags=re.DOTALL):
+            spans.append((m.start(), m.end()))
+    spans.sort()
+    merged = []
+    for s, e in spans:
+        if merged and s <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], e))
+        else:
+            merged.append((s, e))
+    return merged
+
+
+def _in_protected(start, end, spans):
+    for s, e in spans:
+        if start < e and end > s:
+            return True
+    return False
+
+
+def find_safe_fixes(text):
+    """Return [{start,end,original,replacement,reason}] for deterministic,
+    meaning-preserving fixes, skipping protected (quoted/code) spans.
+    Non-overlapping; sorted by position."""
+    spans = protected_spans(text)
+    raw = []
+    for key, repl in SAFE_WORD_SWAPS.items():
+        pat = re.compile(r"\b" + re.escape(key) + r"\b", flags=re.IGNORECASE)
+        for m in pat.finditer(text):
+            if _in_protected(m.start(), m.end(), spans):
+                continue
+            raw.append({
+                "start": m.start(), "end": m.end(),
+                "original": m.group(0),
+                "replacement": _match_case(m.group(0), repl),
+                "reason": f"wordy → plain ({key} → {repl})",
+            })
+    for pat, repl, reason in SAFE_PUNCT_RULES:
+        for m in pat.finditer(text):
+            if _in_protected(m.start(), m.end(), spans):
+                continue
+            raw.append({
+                "start": m.start(), "end": m.end(),
+                "original": m.group(0), "replacement": repl, "reason": reason,
+            })
+    # Sort by position; on ties prefer the longest original; drop overlaps.
+    raw.sort(key=lambda f: (f["start"], -(f["end"] - f["start"])))
+    out, last_end = [], -1
+    for f in raw:
+        if f["start"] >= last_end:
+            out.append(f)
+            last_end = f["end"]
+    return out
+
+
+def apply_safe_fixes(text):
+    """Apply find_safe_fixes right-to-left so offsets stay valid.
+    Return (new_text, applied_fixes)."""
+    fixes = find_safe_fixes(text)
+    new = text
+    for f in sorted(fixes, key=lambda x: x["start"], reverse=True):
+        new = new[:f["start"]] + f["replacement"] + new[f["end"]:]
+    return new, fixes
+
+
+# Judgment guidance: result-key → (axis, severity, category, rewrite instruction).
+# Safe-fixable categories (em dashes, "utilize", wordy connectives) are absent on
+# purpose — the safe-fix pass owns those. What remains needs a reading agent.
+_SLOP_GUIDANCE = {
+    "verbs_h": ("ai-slop", "H", "LLM-favored verb",
+                "Replace with a plain, specific verb that fits the sentence."),
+    "nouns_h": ("ai-slop", "H", "LLM-favored noun",
+                "Swap for the concrete thing you mean; cut the abstraction."),
+    "intensifiers_h": ("ai-slop", "H", "empty intensifier",
+                       "Delete it, or replace with a specific fact that earns the emphasis."),
+    "connectors_h": ("ai-slop", "H", "AI connector",
+                     "Cut, downgrade to and/but/so, or restructure the clauses."),
+    "vague_authority_h": ("ai-slop", "H", "vague authority",
+                          "Name the specific source, or cut the claim if you can't source it."),
+    "copula_avoidance": ("ai-slop", "H", "copula avoidance",
+                         "Use is/has. 'serves as' → 'is'; 'features' → 'has'."),
+    "ing_tails": ("ai-slop", "H", "-ing tail",
+                  "Make it a full sentence with a subject and verb, or cut the trailing clause."),
+    "throat_clearing": ("ai-slop", "H", "throat-clearing",
+                        "Delete the opener; start with the point."),
+    "throatclear_openers": ("ai-slop", "H", "throat-clearing opener",
+                            "Delete the opener; start with the point."),
+    "emphasis_crutches": ("ai-slop", "H", "emphasis crutch",
+                          "Cut it; let the sentence stand."),
+    "vague_declaratives": ("ai-slop", "H", "vague declarative",
+                           "Name the specific thing instead of gesturing at it."),
+    "stake_inflation": ("ai-slop", "H", "stake inflation",
+                        "Drop the drama; state what actually changed."),
+    "grandiose": ("ai-slop", "H", "grandiosity",
+                  "Replace with the concrete, smaller true claim."),
+    "negation_reversals": ("ai-slop", "H", "negation reversal",
+                           "State Y directly; drop the 'not X, but Y' scaffold."),
+    "cross_sentence_negation": ("ai-slop", "H", "negation reversal (cross-sentence)",
+                                "State the positive claim directly across the two sentences."),
+    "buzzword_density": ("ai-slop", "H", "buzzword cluster",
+                         "Rewrite the paragraph in plain words; keep at most one term of art."),
+    "setup_reveal_endings": ("ai-slop", "H", "setup-reveal ending",
+                             "Cut the build-up; put the point first."),
+    "crafted_closer": ("ai-slop", "H", "crafted closer",
+                       "End on a working sentence, not a mic-drop."),
+    "performative_opening": ("ai-slop", "H", "performative opening",
+                             "Open with substance, not a hook."),
+    "anaphora": ("ai-slop", "M", "anaphora",
+                 "Vary the sentence openings; break the repeated stem."),
+    "two_word_punchlines": ("ai-slop", "M", "two-word punchline",
+                            "Fold the punch into the prior sentence."),
+    "three_beat_stacks": ("ai-slop", "M", "three-beat stack",
+                          "Cut to two, or make the third item do different work."),
+    "verbs_m": ("ai-slop", "M", "elevated verb", "Prefer the plainer verb when it fits."),
+    "nouns_m": ("ai-slop", "M", "elevated noun", "Prefer the concrete noun."),
+    "business_cliches": ("ai-slop", "M", "business cliché",
+                         "Replace with a literal description."),
+    "meta_labels": ("ai-slop", "M", "meta-label",
+                    "Cut the label; let the content carry it."),
+    "false_agency": ("ai-slop", "M", "false agency",
+                     "Give the sentence a human subject doing the action."),
+}
+
+# Comprehension patterns → rewrite guidance (keys match comprehension["patterns"]).
+_COMP_GUIDANCE = {
+    "F1_undefined_acronyms": "Define the acronym on first use, or spell it out.",
+    "F3_stat_bombing": "Split the numbers across sentences or into a small table.",
+    "G1_telegraphic_colons": "Write the label as a full clause, not 'Label: fragment'.",
+    "G3_long_sentences": "Split into two; aim under the audience's sentence-length target.",
+    "G4_runon_sentences": "Break at the clause boundaries into separate sentences.",
+    "I9_no_skim_layer": "Add a subheading or lead sentence so the reader can skim.",
+    "I12_parallelism_failure": "Make the list items grammatically parallel.",
+    "J1_passive_voice": "Name the actor and use an active verb.",
+    "J2_nominalizations": "Turn the noun back into a verb ('make a decision' → 'decide').",
+    "H5_forward_references": "Define the term where it first appears.",
+}
+
+
+def _examples(findings, limit=4):
+    """Best-effort human-readable examples from a LIST finding shape."""
+    out = []
+    if not isinstance(findings, list):
+        if findings:
+            out.append(str(findings)[:80])
+        return out
+    for item in findings[:limit]:
+        if isinstance(item, tuple):
+            if len(item) >= 3 and isinstance(item[2], str) and item[2]:
+                out.append(item[2][:80])
+            else:
+                out.append(str(item[0])[:80])
+        elif isinstance(item, list):
+            out.append(f"{len(item)} items")
+        else:
+            out.append(str(item)[:80])
+    return out
+
+
+def _comp_signal(val):
+    """Comprehension patterns are heterogeneous dicts/lists that are ALWAYS
+    present, flagged or not. Return (has_real_signal, examples) so the worklist
+    surfaces only genuine violations — not zero-count context blobs."""
+    if isinstance(val, list):
+        return (len(val) > 0, _examples(val))
+    if isinstance(val, dict):
+        if val.get("flagged") is True:
+            for sub in ("sentences", "acronyms", "entities", "items", "instances", "hits"):
+                items = val.get(sub)
+                if isinstance(items, list) and items:
+                    return (True, [str(x)[:70] for x in items[:4]])
+            return (True, [])
+        for sub in ("acronyms", "entities", "sentences", "items", "instances", "hits"):
+            items = val.get(sub)
+            if isinstance(items, list) and items:
+                return (True, [str(x)[:70] for x in items[:4]])
+        return (False, [])
+    return (bool(val), [])
+
+
+def build_suggestions(text, result):
+    """Assemble a rewrite worklist: before-scores + deterministic safe fixes +
+    judgment items (each with per-category guidance) for the SKILL.md workflow."""
+    comp = result.get("comprehension", {})
+    safe_fixes = find_safe_fixes(text)
+    # Tokens the deterministic pass already owns — don't also list them as
+    # judgment work (no "auto-fix AND hand-rewrite the same word").
+    safe_owned = {f["original"].lower() for f in safe_fixes}
+    judgment = []
+    for section in ("high", "medium", "low"):
+        for key, findings in result.get(section, {}).items():
+            if key not in _SLOP_GUIDANCE:
+                continue
+            ex = [e for e in _examples(findings) if e.lower() not in safe_owned]
+            if not ex:
+                continue
+            axis, sev, cat, guide = _SLOP_GUIDANCE[key]
+            judgment.append({
+                "axis": axis, "severity": sev, "category": cat,
+                "examples": ex, "guidance": guide,
+            })
+    for key, val in comp.get("patterns", {}).items():
+        if key not in _COMP_GUIDANCE:
+            continue
+        signal, ex = _comp_signal(val)
+        if not signal:
+            continue
+        if not ex:
+            ex = [key.split("_", 1)[-1].replace("_", " ")]
+        judgment.append({
+            "axis": "comprehension", "severity": "M", "category": key,
+            "examples": ex, "guidance": _COMP_GUIDANCE[key],
+        })
+    return {
+        "scores": {
+            "ai_slop": {"verdict": result.get("verdict"), "density": result.get("density")},
+            "comprehension": {
+                "verdict": comp.get("verdict"), "density": comp.get("density"),
+                "audience": comp.get("audience"),
+            },
+            "combined": result.get("combined_recommendation"),
+        },
+        "safe_fixes": safe_fixes,
+        "judgment": judgment,
+    }
+
+
 def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
     """Run the full scan (both axes) and return a structured result."""
     clean = strip_code_blocks(text)
@@ -2847,6 +3136,23 @@ def main():
         action="store_true",
         help="Treat ALL em dashes as H severity (Mahmoud-mode). Default: clusters only.",
     )
+    parser.add_argument(
+        "--suggest",
+        action="store_true",
+        help="Emit a rewrite worklist (before-scores + deterministic safe fixes + "
+             "judgment items with guidance) as JSON. Feeds the rewrite workflow.",
+    )
+    parser.add_argument(
+        "--apply-safe",
+        action="store_true",
+        help="Print text with ONLY deterministic, meaning-preserving safe fixes applied "
+             "(skips quoted/code spans). Combine with --in-place to write the file.",
+    )
+    parser.add_argument(
+        "--in-place",
+        action="store_true",
+        help="With --apply-safe, write fixes back to the file instead of stdout.",
+    )
     args = parser.parse_args()
 
     if args.path:
@@ -2862,6 +3168,16 @@ def main():
         print("Empty input.", file=sys.stderr)
         sys.exit(1)
 
+    # --apply-safe short-circuits: deterministic rewrite, no scoring needed.
+    if args.apply_safe:
+        fixed, applied = apply_safe_fixes(text)
+        if args.in_place and args.path:
+            Path(args.path).write_text(fixed, encoding="utf-8")
+            print(f"Applied {len(applied)} safe fix(es) to {args.path}", file=sys.stderr)
+        else:
+            sys.stdout.write(fixed)
+        return
+
     result = analyze(
         text,
         genre=args.genre,
@@ -2869,7 +3185,9 @@ def main():
         audience=args.audience,
     )
 
-    if args.json:
+    if args.suggest:
+        print(json.dumps(build_suggestions(text, result), indent=2, default=str))
+    elif args.json:
         print(json.dumps(result, indent=2, default=str))
     elif args.quick:
         print(format_quick(result))

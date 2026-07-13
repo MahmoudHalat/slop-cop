@@ -1,6 +1,6 @@
 ---
 name: ai-slop-detector
-description: Universal prose audit. Scores writing on TWO axes — AI-Slop (does this read like AI wrote it?) and Comprehension (can a fresh reader follow this?). Use PROACTIVELY as a mandatory final QA pass on ANY prose generated for humans to read — every email (internal or external), proposal, report, status update, blog post, social post, doc, or chat message — before delivering it, even when nobody asked for an audit. Also use whenever the user wants to audit, critique, score, or fix prose: "audit this", "review this", "is this AI", "does this sound like AI", "humanize this", "make this less AI", "AI slop check", "slop check", "de-slop this", "score this", "is this readable", "would a fresh reader follow this", "comprehension check". Also the final pre-delivery pass inside other writing skills (cold-email, copywriting, sales-enablement, ad-creative, email-sequence, mahmouds-seo-writer, mahmouds-writing-voice).
+description: Universal prose audit. Scores writing on TWO axes — AI-Slop (does this read like AI wrote it?) and Comprehension (can a fresh reader follow this?). Use PROACTIVELY as a mandatory final QA pass on ANY prose generated for humans to read — every email (internal or external), proposal, report, status update, blog post, social post, doc, or chat message — before delivering it, even when nobody asked for an audit. Also use whenever the user wants to audit, critique, score, rewrite, or humanize prose: "audit this", "review this", "is this AI", "does this sound like AI", "humanize this", "make this less AI", "rewrite this", "de-slop this", "clean this up", "slop check", "score this", "is this readable", "would a fresh reader follow this", "comprehension check". Also the final pre-delivery pass inside other writing skills (cold-email, copywriting, sales-enablement, ad-creative, email-sequence, mahmouds-seo-writer, mahmouds-writing-voice).
 ---
 
 # slop-cop
@@ -32,16 +32,22 @@ Running it daily means finding new things every week. A pattern I missed. A fals
 
 ## Mode selection
 
-Two modes. Pick one based on what the user wants.
+Three modes. Audit is the default and changes nothing. The two rewrite modes are
+opt-in. Pick one based on what the user wants.
 
 | Signal | Mode |
 |---|---|
-| "audit this", "review", "critique", "is this AI", "is this readable", "score this", "check for slop" | **Audit** |
-| "polish", "edit", "rewrite", "humanize", "make this less AI", "fix this", "de-slop", "clean up" | **Audit, then revise** |
-| User shares a draft and asks for thoughts | **Audit** (default) |
-| Another writing skill is wrapping up and about to deliver prose | **Audit pass before delivery** |
+| "audit this", "review", "critique", "is this AI", "is this readable", "score this", "check for slop" | **Audit** (default) |
+| Another writing skill is wrapping up and about to deliver prose | **Audit** pass before delivery |
+| "rewrite", "humanize", "make this less AI", "de-slop", "clean up", "polish" (text pasted in) | **Rewrite** |
+| "fix this file", "edit this in place", "clean up this doc" (a file to modify) | **Edit-in-place** |
 
-If ambiguous, ask one short question: "Audit only, or do you want a revised version?"
+Audit scores and reports; it does not touch the text. Rewrite returns a cleaned
+version plus a before/after score, leaving the original intact. Edit-in-place
+applies targeted edits to a file and preserves passages that already read human.
+Both rewrite modes follow **the rewrite workflow** below and use `references/rewrite.md`.
+
+If ambiguous, ask one short question: "Audit only, or do you want a rewritten version?"
 
 ---
 
@@ -139,14 +145,49 @@ Don't soften findings on either axis. The point of the audit is to catch what th
 
 ### Step 5 — If asked, deliver the revision
 
-If the user wanted polish/edit (not just critique), produce the full revised version. The rewrite must address violations on **both axes**:
+If the user wanted a rewrite, not just critique, switch to **the rewrite workflow**
+below. Do not free-hand a rewrite; the workflow measures the result so you can
+prove it improved.
 
-- Replace AI texture: kill `delve`-class verbs, em-dash clusters, sycophancy, grandiose framing
-- Add reader scaffolding: define acronyms inline, break up long paragraphs, add a thesis sentence, contextualize named entities, replace telegraphic colon-labels with sentences
-- Hit audience-specific readability targets (FK grade in band, lexical density appropriate, sentence length variance present)
-- Don't introduce new tells (re-scan after rewrite if uncertain)
+---
 
-The revision should read as deliverable prose for the target audience.
+## The rewrite workflow
+
+Load `references/rewrite.md` for the full doctrine and `references/voice-profiles.md`
+for the voices. The loop, in short:
+
+**1. Scan for a worklist.** Run `--suggest` to get before-scores, deterministic
+safe fixes (with offsets), and a judgment worklist with per-item guidance:
+
+```bash
+python3 scripts/scan.py --suggest path/to/draft.md
+# or:  cat draft.md | python3 scripts/scan.py --suggest
+```
+
+**2. Apply the safe fixes.** These are meaning-preserving 1:1 swaps only (em dash →
+comma, "utilize" → "use", "in order to" → "to"). They skip text inside quotes and
+code, so a word quoted AS an example is never rewritten. The engine owns these:
+
+```bash
+python3 scripts/scan.py --apply-safe path/to/draft.md            # to stdout
+python3 scripts/scan.py --apply-safe --in-place path/to/draft.md  # writes the file
+```
+
+**3. Rewrite the judgment items in a target voice.** Pick a voice profile (from the
+user, or inferred from `--audience`/`--genre`). Work through the judgment worklist:
+split long sentences, name vague authorities, kill copula-avoidance, un-bury claims,
+define acronyms. Rewrite for **both axes at once**. Stay evidence-safe: never change
+facts, numbers, quotes, or citations, and never invent a source. Rewrite toward a
+voice, not a vacuum — subtracting tells without adding voice just makes new slop.
+
+**4. Re-scan and prove it.** Run the plain scan on the rewrite. Report before/after
+verdict and density on **both** axes. If either axis is still above LOW, do one more
+pass on what remains. Two passes is normal; a third means the draft needed a rethink.
+
+**5. Deliver.** For **rewrite** mode, return the cleaned text plus the before/after
+scores. For **edit-in-place**, apply the changes with the Edit tool, preserving
+passages that already scanned clean, and report what changed. The re-scan is the
+proof; never claim a rewrite worked without it.
 
 ---
 
@@ -239,13 +280,15 @@ Read what the task needs.
 | File | Read when |
 |---|---|
 | `references/patterns.md` | AI-Slop qualitative pass. The 47 rhetorical/structural patterns. |
-| `references/vocabulary.md` | AI-Slop word-level tells. ~195 items in 11 categories. |
-| `references/formatting-tells.md` | AI-Slop formatting checks. ~33 items in 5 categories. |
+| `references/vocabulary.md` | AI-Slop word-level tells. 200+ items in tiered categories. |
+| `references/formatting-tells.md` | AI-Slop formatting checks. 33 items in 5 categories. |
 | `references/comprehension.md` | Comprehension qualitative pass. The 35 patterns in 5 groups. |
 | `references/readability-metrics.md` | When interpreting the readability panel. The 8 formulas + thresholds + audience targets. |
+| `references/rewrite.md` | Both rewrite modes. The rewrite loop, evidence-safe rules, patch-vs-rewrite threshold. |
+| `references/voice-profiles.md` | During a rewrite. Seven voices + which `--audience` each pairs with. |
 | `references/calibration.md` | Always at the start of every audit. Density rules, genre, audience, fingerprints, contested tells, cross-axis matrix. |
 | `references/audit-report-template.md` | Always at the start. Defines the dual-verdict output format. |
-| `references/sources.md` | When challenged on a specific tell. ~135 sources backing the catalogs. |
+| `references/sources.md` | When challenged on a specific tell. ~130 sources backing the catalogs. |
 
 The `scripts/scan.py` scanner runs both axes in one pass and produces a report that references the categories and items in these files.
 

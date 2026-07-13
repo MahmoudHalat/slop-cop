@@ -12,7 +12,7 @@
 
 ---
 
-**slop-cop** is a Claude Code skill that catches sloppy writing before it ships.
+**slop-cop** is a Claude Code skill that catches sloppy writing before it ships, then rewrites it when you ask.
 
 Our feeds are becoming shit. Our websites are becoming shit. Our repos are becoming shit. AI didn't make writing harder, it made writing easier, and now everyone uses the same shortcuts, the same shapes, the same words. Open ten landing pages in a row and you can't tell them apart.
 
@@ -23,7 +23,7 @@ slop-cop runs two tests on a draft:
 
 A piece can pass one test and fail the other. A blog post might pass the AI test but be too hard to read because it stuffs nine short forms into one paragraph. A casual note might fail the AI test but read just fine.
 
-Hand it a draft. You get back two scores, the words to cut, a guess at which AI made it, and one clear next step.
+Hand it a draft. You get back two scores, the words to cut, a guess at which AI made it, and one clear next step. Ask it to fix the draft and it rewrites in a voice you pick, applies the safe fixes on its own, then scans again to prove the rewrite actually landed.
 
 Both tests use density. What matters is how often the patterns pile up close together, not whether one bad word shows up once. This README scores LOW on its own test.
 
@@ -63,32 +63,66 @@ Want git? Clone right in:
 git clone https://github.com/MahmoudHalat/slop-cop.git ~/.claude/skills/ai-slop-detector
 ```
 
+### Other agents
+
+The skill is a portable `SKILL.md` plus a zero-dependency Python scanner, so it runs
+anywhere that reads Agent Skills. Same catalog, same scanner, same rewrite workflow.
+
+| Tool | Where to put it |
+|------|-----------------|
+| **Claude Code** | `~/.claude/skills/ai-slop-detector/` |
+| **Claude Cowork** | install the repo as a plugin (`/plugin marketplace add MahmoudHalat/slop-cop`) |
+| **OpenAI Codex** | `~/.agents/skills/ai-slop-detector/` (or `.agents/skills/` in a repo) |
+| **Cursor** | clone anywhere, then reference `SKILL.md` from `.cursor/rules/` |
+| **Windsurf** | `.windsurf/rules/` referencing `SKILL.md` |
+| **Cline** | `.clinerules/` referencing `SKILL.md` |
+| **Any other** | point the agent at `SKILL.md`; run `scan.py` for scoring and `--apply-safe` for fixes |
+
+The scanner needs only Python 3 (no packages). On any platform, `scan.py --suggest`
+and `--apply-safe` work from the shell even if the agent integration does not.
+
 ## Use
+
+Three modes. **Audit** is the default and changes nothing. **Rewrite** returns a
+cleaned version with a before/after score. **Edit-in-place** fixes a file and keeps
+the parts that already read human.
 
 In Claude Code, just talk to it:
 
 ```
-audit this draft for AI tells
-is this AI?
-is this readable?
-humanize this
-slop-check
-de-slop this paragraph
-comprehension check
-would a fresh reader follow this?
+audit this draft for AI tells      # audit
+is this AI?                        # audit
+is this readable?                  # audit
+rewrite this to sound human        # rewrite
+de-slop this paragraph             # rewrite
+humanize this in a warm voice      # rewrite, with a voice
+fix this file in place             # edit-in-place
+comprehension check                # audit
 ```
+
+Every rewrite ends with a re-scan, so you get the before/after proof, not a promise.
 
 Or run the scanner straight from the shell:
 
 ```bash
+# Audit
 python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py path/to/draft.md
 python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --quick draft.md
 python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --json draft.md
 python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --genre academic draft.md
 python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --audience marketing draft.md
-python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --strict-em-dash draft.md
+
+# Rewrite (hybrid: deterministic safe fixes + a judgment worklist)
+python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --suggest draft.md      # worklist + before-scores (JSON)
+python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --apply-safe draft.md   # meaning-preserving fixes to stdout
+python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py --apply-safe --in-place draft.md
 echo "your draft text" | python3 ~/.claude/skills/ai-slop-detector/scripts/scan.py
 ```
+
+`--apply-safe` only makes swaps that never change meaning (em dash → comma,
+"utilize" → "use"), and it skips anything inside quotes or code, so a word you are
+quoting *as an example* is never rewritten. Everything that needs judgment goes to
+the rewrite workflow, where Claude rewrites it in a target voice and re-scans.
 
 ## What it looks like
 
@@ -112,7 +146,7 @@ Two tests. Each one has its own list of patterns the scanner pulls from.
 | Layer | Coverage | Source |
 |---|---|---|
 | **Patterns** | 47 patterns in 6 groups: rhetorical shapes, sentence-level tells, voice, decoration, density, abstraction & agency | [`references/patterns.md`](ai-slop-detector/references/patterns.md) |
-| **Words** | About 195 phrases in 11 groups: AI verbs, cliché metaphors, empty boosters, sucking up, vague authority, connector words, spike words, throat-clearing openers, business buzzwords, label asides, blanket absolutes | [`references/vocabulary.md`](ai-slop-detector/references/vocabulary.md) |
+| **Words** | 200+ phrases in tiered groups: AI verbs, cliché metaphors, empty boosters, sucking up, vague authority, connector words, spike words, throat-clearing openers, business buzzwords, label asides, blanket absolutes | [`references/vocabulary.md`](ai-slop-detector/references/vocabulary.md) |
 | **Format** | About 33 in 5 groups: markdown shapes, title shapes, section shapes, repeats, white-space junk | [`references/formatting-tells.md`](ai-slop-detector/references/formatting-tells.md) |
 
 ### Comprehension test

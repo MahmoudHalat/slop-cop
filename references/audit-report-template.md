@@ -144,7 +144,7 @@ Always include word count, audience, burstiness, fingerprint. Audience is critic
 
 ### AI-Slop axis section
 
-Existing slop-cop logic. The 47 patterns + ~195 vocabulary tells + ~33 formatting tells. Mechanical violations come from scan.py; qualitative require reading.
+Existing slop-cop logic. The 47 patterns + 200+ vocabulary tells + 33 formatting tells. Mechanical violations come from scan.py; qualitative require reading.
 
 ### Comprehension axis section
 
