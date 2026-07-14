@@ -1340,36 +1340,23 @@ def find_named_entities(text, sentences):
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December",
     }
-    # Strip markdown heading lines (count their tokens but don't double-flag the first word)
-    body = re.sub(r"^#+\s+(.*)$", r"\1", text, flags=re.MULTILINE)
-
-    # Scan for capitalized tokens that aren't sentence-initial
-    tokens = re.findall(r"\b([A-Z][a-zA-Z]+)\b", body)
+    # Count capitalized tokens that are NOT the first word of their sentence.
+    # A sentence-initial capital is ambiguous (imperative verb, greeting, or a
+    # real name), so we skip it positionally rather than via a leaky whitelist.
+    # This stops ordinary prose ("Get X. Reach Y. See Z.") and single-brand
+    # emails from reading as named-entity bombing.
     counts = {}
-    for tok in tokens:
-        if tok in common_calendar:
-            continue
-        if tok in KNOWN_ACRONYMS:
-            continue
-        if tok in sentence_starts and (tok in {"The", "This", "That", "These", "Those",
-                                                "It", "We", "I", "You", "They", "He", "She",
-                                                "A", "An", "Our", "Your", "My", "Their", "His", "Her",
-                                                "If", "When", "Where", "What", "Why", "How",
-                                                "After", "Before", "In", "On", "At", "From", "To",
-                                                "But", "And", "Or", "So", "Then", "While", "Now",
-                                                "First", "Last", "Second", "Third", "Most", "Some",
-                                                "All", "Each", "Every", "No", "Yes",
-                                                "Note", "TLDR", "TL", "Re", "Over",
-                                                "Since", "Until", "About", "Among", "Through",
-                                                "During", "Within", "Across", "Despite", "Although",
-                                                "Though", "Because", "Whereas", "Without", "With",
-                                                "Like", "Unlike", "Once", "Twice", "Whether",
-                                                "However", "Moreover", "Therefore", "Thus", "Hence",
-                                                "Otherwise", "Even", "Still", "Just", "Only",
-                                                "Already", "Yet", "Sometimes", "Often", "Rarely",
-                                                "Always", "Never", "Maybe", "Perhaps", "Probably"}):
-            continue
-        counts[tok] = counts.get(tok, 0) + 1
+    for s in sentences:
+        s2 = re.sub(r"^#+\s+", "", s)  # drop a leading markdown heading marker
+        first = re.search(r"\b\w+\b", s2)
+        first_start = first.start() if first else -1
+        for m in re.finditer(r"\b([A-Z][a-zA-Z]+)\b", s2):
+            tok = m.group(1)
+            if m.start() == first_start:
+                continue
+            if tok in common_calendar or tok in KNOWN_ACRONYMS:
+                continue
+            counts[tok] = counts.get(tok, 0) + 1
     pairs = sorted(counts.items(), key=lambda x: -x[1])
     total = sum(counts.values())
     words = max(1, count_words(text))
@@ -1658,7 +1645,7 @@ def named_entity_window_compound(text, sentences, words_per_window=100):
         ents = [t for t in toks
                 if t not in common_calendar
                 and t not in KNOWN_ACRONYMS
-                and not (t in sentence_starts and t in common_starts)]
+                and t not in sentence_starts]  # any sentence-start form is ambiguous
         # Use distinct count — repeated mentions of the same brand shouldn't escalate.
         if len(set(ents)) >= 7:
             return True

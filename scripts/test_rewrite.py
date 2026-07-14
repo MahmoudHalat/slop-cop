@@ -109,6 +109,35 @@ class Suggestions(unittest.TestCase):
             self.assertTrue(item["guidance"])
 
 
+class ComprehensionFalsePositives(unittest.TestCase):
+    def test_imperative_openers_not_named_entities(self):
+        # Sentence-initial capitals (imperatives, greetings, sign-offs) must NOT
+        # count as named entities — the bug that flagged readable marketing copy.
+        text = ("Hi team. Get more done today. Reach your goals faster. "
+                "Connect the tools you already use. See the difference. Best, the crew.")
+        ents = dict(scan.find_named_entities(text, scan.split_sentences(text))["entities"])
+        for w in ("Get", "Reach", "Connect", "See", "Hi", "Best"):
+            self.assertNotIn(w, ents, f"{w} wrongly counted as a named entity")
+
+    def test_single_brand_email_no_entity_bombing(self):
+        text = ("With Acme, you can connect the tools you already use. "
+                "Get insights that flag what needs attention. Reach a real support team any time. "
+                "See it for yourself. Acme already runs the day-to-day for thousands of teams. "
+                "Whether you work solo or lead a team, Acme takes the busywork off your plate. "
+                "Book a free demo today and we will walk you through how it fits your work.")
+        self.assertFalse(scan.named_entity_window_compound(text, scan.split_sentences(text)),
+                         "one-brand readable email wrongly triggered entity-bombing")
+
+    def test_readable_prose_not_high_comprehension(self):
+        # Grade ~5, Flesch ~80 marketing prose must not escalate to HIGH/CRITICAL.
+        text = ("Most owners track more moving parts than one person can handle. That costs time. "
+                "Acme gives some of it back. Whether you work solo or lead a team, the platform "
+                "takes the repetitive work off your plate. You spend less time on busywork and more "
+                "on the decisions that grow the business. Book a demo and we will show you how it fits.")
+        v = scan.analyze(text, audience="marketing")["comprehension"]["verdict"]
+        self.assertIn(v, ("PASS", "LOW", "MEDIUM"), f"readable prose scored {v}")
+
+
 class CLI(unittest.TestCase):
     def _run(self, args, stdin):
         return subprocess.run([sys.executable, SCAN, *args], input=stdin,
