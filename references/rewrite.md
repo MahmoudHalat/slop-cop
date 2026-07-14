@@ -97,6 +97,15 @@ true scene beats a fake statistic. Generic praise is abstraction in a nicer coat
 If a sentence would be true of any product in the category, it is not a rewrite yet.
 Make it true of this one, honestly.
 
+**Concrete AND complete.** Concreteness changes HOW each point is said. It never
+lets you drop a point or add one. Before you finish, check the rewrite against the
+original: is every claim, feature, audience, and offer still there, and did you
+invent nothing that wasn't? Getting vivid by quietly dropping the "works for solo
+or team" line, or by inventing a capability to make a scene land, trades one kind
+of slop for another. The strongest rewrites in the wild keep every element of the
+brief and still read human. Match that: full coverage, zero invention, concrete
+throughout.
+
 The rest, in order of leverage:
 
 - **Vary the rhythm on purpose.** A short sentence after two long ones. A fragment

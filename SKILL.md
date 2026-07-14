@@ -185,12 +185,15 @@ The move that separates a human rewrite from clean corporate filler is
 a name, a scene, one true detail), not a warmer abstraction. If a sentence would be
 true of any product in the category, it is not a rewrite yet. See `references/rewrite.md`.
 
-**4. Re-scan and prove it.** Run the plain scan on the rewrite. Report before/after
-verdict and density on **both** axes. Also check burstiness: if it sits below about
-0.5, or the scan reports `sanded_prose`, the rewrite went sterile — vary the rhythm
-and add a concrete detail, don't ship it flat. If either axis is still above LOW, do
-one more pass on what remains. Two passes is normal; a third means the draft needed a
-rethink.
+**4. Check fidelity, then re-scan and prove it.** First, fidelity: list every claim,
+feature, audience, and offer in the original and confirm each survived the rewrite,
+and that you invented nothing new. Getting concrete by dropping an element or adding
+a fake detail is a fidelity failure, not a rewrite. Then run the plain scan and report
+before/after verdict and density on **both** axes. Check burstiness too: if it sits
+below about 0.5, or the scan reports `sanded_prose`, the rewrite went sterile — vary
+the rhythm and add a concrete detail, don't ship it flat. If either axis is still
+above LOW, do one more pass on what remains. Two passes is normal; a third means the
+draft needed a rethink.
 
 **5. Deliver.** For **rewrite** mode, return the cleaned text plus the before/after
 scores. For **edit-in-place**, apply the changes with the Edit tool, preserving

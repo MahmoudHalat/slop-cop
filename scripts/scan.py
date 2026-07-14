@@ -1178,6 +1178,54 @@ def contraction_ratio(text):
     return round(contractions / total, 2)
 
 
+# =============================================================================
+# AI-TOOL FINGERPRINTS — near-definitive artifacts of AI / paste-job output.
+# High precision (humans do not ship these), so they carry H severity. Adapted
+# from the avoid-ai-writing catalog; these catch real ChatGPT/Copilot paste-jobs.
+# =============================================================================
+
+UNFILLED_PLACEHOLDER = re.compile(
+    r"\[(?:your|insert|company|first[ _]?name|last[ _]?name|full[ _]?name|client|"
+    r"recipient|product|industry|topic|city|date|title|name here|xxx+)\b[^\]\n]{0,30}\]"
+    r"|\b20\d{2}-XX-XX\b",
+    re.IGNORECASE,
+)
+# Chatbot citation/tool markup that survives a copy-paste.
+CITATION_MARKUP = re.compile(
+    r"oai_citation|cite​turn\d|citeturn\d|contentReference\[oaicite|:contentReference"
+)
+AI_UTM = re.compile(
+    r"utm_source=(?:chatgpt|chat\.openai|copilot|perplexity|gemini|claude)\b",
+    re.IGNORECASE,
+)
+
+
+def find_placeholders(text):
+    """Unfilled template placeholders — a near-definitive shipped-AI tell."""
+    return [m.group(0)[:40] for m in UNFILLED_PLACEHOLDER.finditer(text)]
+
+
+def find_citation_markup(text):
+    """Chatbot citation tokens left in the text (oai_citation, citeturn, ...)."""
+    return [m.group(0)[:40] for m in CITATION_MARKUP.finditer(text)]
+
+
+def find_ai_utm(text):
+    """utm_source=chatgpt.com and friends — the link came from a chatbot."""
+    return [m.group(0)[:60] for m in AI_UTM.finditer(text)]
+
+
+def find_hashtag_stuffing(text):
+    """6+ hashtags overall, or a trailing block of 5+ on one line. Returns
+    (sample_tags, total_count, max_on_one_line); empty sample means not flagged."""
+    tags = re.findall(r"(?<!\w)#[A-Za-z]\w{1,30}", text)
+    max_line = 0
+    for line in text.splitlines():
+        max_line = max(max_line, len(re.findall(r"(?<!\w)#[A-Za-z]\w{1,30}", line)))
+    flagged = len(tags) >= 6 or max_line >= 5
+    return (tags[:10] if flagged else [], len(tags), max_line)
+
+
 def detect_model_fingerprint(text):
     """Heuristic: count GPT/Claude/Gemini markers and report dominant."""
     gpt_count = sum(len(re.findall(p, text, flags=re.IGNORECASE)) for p in GPT_MARKERS)
@@ -2162,6 +2210,12 @@ _SLOP_GUIDANCE = {
                           "Cut it; let the sentence stand."),
     "vague_declaratives": ("ai-slop", "H", "vague declarative",
                            "Name the specific thing instead of gesturing at it."),
+    "unfilled_placeholders": ("ai-slop", "H", "unfilled placeholder",
+                              "Fill in the real value or delete it; a shipped placeholder is a dead giveaway."),
+    "citation_markup": ("ai-slop", "H", "chatbot citation markup",
+                        "Strip the citation token entirely."),
+    "ai_utm": ("ai-slop", "H", "AI-tool tracking parameter",
+               "Remove the utm_source parameter; keep the URL if the link matters."),
     "stake_inflation": ("ai-slop", "H", "stake inflation",
                         "Drop the drama; state what actually changed."),
     "grandiose": ("ai-slop", "H", "grandiosity",
@@ -2355,6 +2409,9 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
             "emphasis_crutches": find_regex_hits(clean, EMPHASIS_CRUTCH_H),
             "vague_declaratives": find_regex_hits(clean, VAGUE_DECLARATIVE_H),
             "rhetorical_qa": RHETORICAL_QA.findall(clean),
+            "unfilled_placeholders": find_placeholders(clean),
+            "citation_markup": find_citation_markup(clean),
+            "ai_utm": find_ai_utm(clean),
             "crafted_closer": find_crafted_closer(clean),
             "performative_opening": find_performative_opening(clean),
             "setup_reveal_endings": find_setup_reveal_endings(paragraphs),
@@ -2366,6 +2423,7 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
         },
         "medium": {
             "dramatic_countdown": find_dramatic_countdown(sentences),
+            "hashtag_stuffing": find_hashtag_stuffing(clean),
             "anaphora": find_anaphora(sentences),
             "short_sentence_clusters_m": [r for r in find_short_sentence_clusters(sentences) if len(r) == 3],
             "two_word_punchlines": find_two_word_punchlines(sentences),
@@ -2439,6 +2497,9 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
         + sum(c for _, c, _ in result["high"]["throatclear_openers"])
         + sum(c for _, c, _ in result["high"]["emphasis_crutches"])
         + sum(c for _, c, _ in result["high"]["vague_declaratives"])
+        + len(result["high"]["unfilled_placeholders"])
+        + len(result["high"]["citation_markup"])
+        + len(result["high"]["ai_utm"])
     )
     medium_count = (
         len(result["medium"]["dramatic_countdown"])
@@ -2470,6 +2531,7 @@ def analyze(text, genre=None, strict_em_dash=False, audience="casual"):
         + sum(c for _, c, _ in result["medium"]["meta_labels"])
         + sum(c for _, c, _ in result["medium"]["false_agency"])
         + len(result["medium"]["lazy_extremes"])
+        + (1 if result["medium"]["hashtag_stuffing"][0] else 0)
     )
     low_count = (
         sum(c for _, c in result["low"]["magic_adverbs"])

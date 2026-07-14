@@ -138,6 +138,41 @@ class ComprehensionFalsePositives(unittest.TestCase):
         self.assertIn(v, ("PASS", "LOW", "MEDIUM"), f"readable prose scored {v}")
 
 
+class FingerprintTells(unittest.TestCase):
+    def test_placeholders_caught(self):
+        self.assertTrue(scan.find_placeholders("Hi [First Name], welcome to [Your Company]."))
+        self.assertTrue(scan.find_placeholders("Draft dated 2025-XX-XX."))
+
+    def test_placeholders_no_false_positives(self):
+        # markdown checkbox, [sic], numeric citation, normal aside must NOT flag
+        self.assertEqual(scan.find_placeholders("- [x] done\n- [ ] todo"), [])
+        self.assertEqual(scan.find_placeholders("He wrote 'recieve' [sic] in the note."), [])
+        self.assertEqual(scan.find_placeholders("As shown in [1] and [2]."), [])
+
+    def test_citation_markup_caught(self):
+        self.assertTrue(scan.find_citation_markup("great point oai_citation turn0search1 here"))
+        self.assertEqual(scan.find_citation_markup("A normal sentence with a citation of sorts."), [])
+
+    def test_ai_utm_caught(self):
+        self.assertTrue(scan.find_ai_utm("see https://x.com/a?utm_source=chatgpt.com"))
+        self.assertEqual(scan.find_ai_utm("see https://x.com/a?utm_source=newsletter"), [])
+
+    def test_hashtag_stuffing(self):
+        self.assertTrue(scan.find_hashtag_stuffing("post #AI #Tech #Innovation #Future #Growth #Web3")[0])
+        self.assertFalse(scan.find_hashtag_stuffing("a normal post with #one tag")[0])
+
+    def test_placeholder_raises_ai_slop_score(self):
+        base = "We help teams move faster and keep everything in one place for the week ahead."
+        with_ph = "Hi [First Name], " + base
+        self.assertGreater(scan.analyze(with_ph)["density"], scan.analyze(base)["density"])
+
+    def test_clean_human_text_still_passes(self):
+        # a normal human sentence with brackets/hashtag must not get fingerprint-flagged
+        r = scan.analyze("The report [see appendix] covers Q3. Follow #teamwork if curious.")
+        self.assertEqual(r["high"]["unfilled_placeholders"], [])
+        self.assertEqual(r["high"]["citation_markup"], [])
+
+
 class CLI(unittest.TestCase):
     def _run(self, args, stdin):
         return subprocess.run([sys.executable, SCAN, *args], input=stdin,
