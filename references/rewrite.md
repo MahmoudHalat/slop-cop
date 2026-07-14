@@ -69,18 +69,45 @@ Voice changes HOW something is said. It never changes WHAT is claimed.
 - **Keep passages that are already human.** Do not rewrite text that scanned clean.
   Churn is not improvement.
 
-## Anti-sterilization
+## Anti-sterilization: the concreteness rule
 
-Subtracting tells without adding voice creates new slop. Strip every flagged word
-from a paragraph and you often get flat, sanded, characterless prose that a
-different classifier flags just as fast. The scanner has a signature for exactly
-this failure: `sanded_prose` (few vocabulary tells, many structural ones, low
-burstiness). If your rewrite trips it, you subtracted without adding.
+Subtracting tells without adding anything creates new slop. Strip every flagged
+word from a paragraph and you usually get flat, sanded, characterless prose that a
+different classifier flags just as fast. The scanner has a signature for it:
+`sanded_prose` (few vocabulary tells, many structural ones, low burstiness). If
+your rewrite trips it, or its burstiness sits below about 0.5, you subtracted
+without adding, and you are not done.
 
-So always rewrite toward a voice, not toward a vacuum. Pick a profile before you
-start. Fold specifics back in where you cut abstraction. Vary sentence length on
-purpose. The goal is prose a person would want to read, not prose that merely
-avoids the banned words.
+The fix that matters most is concreteness. When you cut an abstraction, do not
+replace it with a warmer abstraction. Replace it with a specific: a number, a name,
+a scene, one small true detail. This is the single biggest difference between a
+rewrite that reads human and one that reads like clean corporate filler.
+
+- "takes the repetitive work off your plate" → "copies the numbers between your
+  tools so you don't have to"
+- "empowers teams to succeed" → "when something breaks at 2am, you reach a person,
+  not a ticket queue"
+- "drives meaningful results" → name the actual task it does: "flags the one number
+  in the report that moved"
+
+Concreteness comes from scenes, specific nouns, and plain description of what the
+thing actually does. It does NOT come from inventing data. Evidence-safe still
+holds: if you don't have a real number, don't manufacture one to sound specific. A
+true scene beats a fake statistic. Generic praise is abstraction in a nicer coat.
+If a sentence would be true of any product in the category, it is not a rewrite yet.
+Make it true of this one, honestly.
+
+The rest, in order of leverage:
+
+- **Vary the rhythm on purpose.** A short sentence after two long ones. A fragment
+  where it lands. Uniform sentence length is the loudest structural tell.
+- **Open with something real** — a question, a concrete scene — not a mission
+  statement.
+- **Break the parallel-clause reflex.** "You connect. You get. You reach." is
+  corporate. Turn at least one item into a sentence with texture.
+- **Pick the warmest voice that fits.** Default to warm or conversational. Reach for
+  "professional" only when the context truly needs distance. Stiffness is a failure
+  mode, not a safe default.
 
 ## Rewrite versus patch
 

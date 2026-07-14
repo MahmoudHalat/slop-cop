@@ -10,19 +10,21 @@ Voice changes how something is said, never what it claims. Meaning, facts, numbe
 
 **Anti-sterilization rule:** subtracting tells without adding a voice creates new, equally detectable slop. Always rewrite toward a voice, never toward a vacuum.
 
+**Concreteness beats register.** The fastest way a rewrite reads human is specifics, not a warmer tone. When you cut an abstraction, replace it with a number, a name, or a small scene, not a nicer-sounding abstraction. "Empowers your team" is corporate in every voice; "cuts your monthly close from five days to two" is human in all of them. Pick a voice for tone, then earn the humanity with concrete detail.
+
 ## Picking a profile from the flags
 
 | scan.py `--audience` | Default profile |
 |---|---|
 | casual | casual (or plain) |
-| marketing | professional |
+| marketing | warm or casual (never stiff "professional") |
 | academic | academic |
 | encyclopedic | plain |
 | technical | technical |
 | fiction | match the manuscript's own voice; warm or casual if none is set |
 | healthcare | warm |
 
-A named `--genre` overrides the inference. When nothing is set, use **plain**.
+A named `--genre` overrides the inference. When nothing is set, default to **warm** or **conversational**, not plain-neutral and never stiff professional. A slightly-too-warm rewrite reads human; a stiff one reads corporate, which is its own slop.
 
 ## The shared source sentence
 

@@ -173,16 +173,24 @@ python3 scripts/scan.py --apply-safe path/to/draft.md            # to stdout
 python3 scripts/scan.py --apply-safe --in-place path/to/draft.md  # writes the file
 ```
 
-**3. Rewrite the judgment items in a target voice.** Pick a voice profile (from the
-user, or inferred from `--audience`/`--genre`). Work through the judgment worklist:
-split long sentences, name vague authorities, kill copula-avoidance, un-bury claims,
-define acronyms. Rewrite for **both axes at once**. Stay evidence-safe: never change
-facts, numbers, quotes, or citations, and never invent a source. Rewrite toward a
-voice, not a vacuum — subtracting tells without adding voice just makes new slop.
+**3. Rewrite the judgment items in a target voice.** Pick a voice profile. Default to
+the warmest voice that fits the genre; "professional" reads as corporate unless the
+context truly needs distance. Work through the judgment worklist: split long
+sentences, name vague authorities, kill copula-avoidance, un-bury claims, define
+acronyms. Rewrite for **both axes at once**. Stay evidence-safe: never change facts,
+numbers, quotes, or citations, and never invent a source.
+
+The move that separates a human rewrite from clean corporate filler is
+**concreteness**: when you cut an abstraction, replace it with a specific (a number,
+a name, a scene, one true detail), not a warmer abstraction. If a sentence would be
+true of any product in the category, it is not a rewrite yet. See `references/rewrite.md`.
 
 **4. Re-scan and prove it.** Run the plain scan on the rewrite. Report before/after
-verdict and density on **both** axes. If either axis is still above LOW, do one more
-pass on what remains. Two passes is normal; a third means the draft needed a rethink.
+verdict and density on **both** axes. Also check burstiness: if it sits below about
+0.5, or the scan reports `sanded_prose`, the rewrite went sterile — vary the rhythm
+and add a concrete detail, don't ship it flat. If either axis is still above LOW, do
+one more pass on what remains. Two passes is normal; a third means the draft needed a
+rethink.
 
 **5. Deliver.** For **rewrite** mode, return the cleaned text plus the before/after
 scores. For **edit-in-place**, apply the changes with the Edit tool, preserving
