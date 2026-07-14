@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="banner.svg" alt="slop-cop catches AI prose before it ships" width="1100">
+  <img src="banner.svg" alt="slop-cop — does it sound like AI wrote it, and can a real person still read it? A dual-axis auditor and rewriter for Claude Code" width="1100">
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@ A piece can pass one test and fail the other. A blog post might pass the AI test
 
 Hand it a draft. You get back two scores, the words to cut, a guess at which AI made it, and one clear next step. Ask it to fix the draft and it rewrites in a voice you pick, applies the safe fixes on its own, then scans again to prove the rewrite actually landed.
 
-Both tests use density. What matters is how often the patterns pile up close together, not whether one bad word shows up once. This README scores LOW on its own test.
+Both tests use density. What matters is how often the patterns pile up close together, not whether one bad word shows up once. And no, this README does not pass its own scanner: a document that quotes every tell it catalogs, in tables and examples, trips the thing hard. The scanner counts what is on the page and can't tell a quoted example from the real one. That is a real limit, and it is exactly why a person still reads the flags instead of trusting the number.
 
 ## Why I built this
 
@@ -148,6 +148,7 @@ Two tests. Each one has its own list of patterns the scanner pulls from.
 | **Patterns** | 47 patterns in 6 groups: rhetorical shapes, sentence-level tells, voice, decoration, density, abstraction & agency | [`references/patterns.md`](ai-slop-detector/references/patterns.md) |
 | **Words** | 200+ phrases in tiered groups: AI verbs, cliché metaphors, empty boosters, sucking up, vague authority, connector words, spike words, throat-clearing openers, business buzzwords, label asides, blanket absolutes | [`references/vocabulary.md`](ai-slop-detector/references/vocabulary.md) |
 | **Format** | About 33 in 5 groups: markdown shapes, title shapes, section shapes, repeats, white-space junk | [`references/formatting-tells.md`](ai-slop-detector/references/formatting-tells.md) |
+| **AI-tool fingerprints** | Near-definitive paste-job tells: unfilled placeholders (`[Your Name]`), chatbot citation markup (`oai_citation`), `utm_source=chatgpt.com` links, hashtag stuffing | [`scripts/scan.py`](ai-slop-detector/scripts/scan.py) |
 
 ### Comprehension test
 
