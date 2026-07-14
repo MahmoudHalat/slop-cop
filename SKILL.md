@@ -173,17 +173,24 @@ python3 scripts/scan.py --apply-safe path/to/draft.md            # to stdout
 python3 scripts/scan.py --apply-safe --in-place path/to/draft.md  # writes the file
 ```
 
-**3. Rewrite the judgment items in a target voice.** Pick a voice profile. Default to
-the warmest voice that fits the genre; "professional" reads as corporate unless the
-context truly needs distance. Work through the judgment worklist: split long
-sentences, name vague authorities, kill copula-avoidance, un-bury claims, define
-acronyms. Rewrite for **both axes at once**. Stay evidence-safe: never change facts,
-numbers, quotes, or citations, and never invent a source.
+**3. Rewrite — patch a little, rebuild a lot.** Pick a voice profile. Default to the
+warmest voice that fits the genre; "professional" reads as corporate unless the
+context truly needs distance. The worklist tells you WHAT is wrong; how you fix it
+depends on how much is wrong:
 
-The move that separates a human rewrite from clean corporate filler is
-**concreteness**: when you cut an abstraction, replace it with a specific (a number,
-a name, a scene, one true detail), not a warmer abstraction. If a sentence would be
-true of any product in the category, it is not a rewrite yet. See `references/rewrite.md`.
+- **Light draft (LOW/MEDIUM, scattered flags):** patch in place — split long
+  sentences, name vague authorities, kill copula-avoidance, define acronyms.
+- **Heavy draft (HIGH/CRITICAL or templated marketing/AI copy): rebuild it.** Do NOT
+  edit span by span. Read the worklist as diagnosis, set the draft aside, and write
+  the piece fresh from its brief in the target voice. Change the skeleton: dissolve
+  bullet lists into prose, open on a concrete scene, reorder. Patching a heavy draft
+  keeps the corporate shape, and the shape is half the slop. Rebuild, don't renovate.
+
+Either way, rewrite for **both axes at once**, use **concreteness** — replace a cut
+abstraction with a specific (a scene, a name, one true detail), never a warmer
+abstraction — and **cut to the bone**: a rebuild should come out shorter than the
+slop it replaces, not longer. Stay evidence-safe: keep every element of the brief,
+change no facts or numbers, invent nothing. See `references/rewrite.md`.
 
 **4. Check fidelity, then re-scan and prove it.** First, fidelity: list every claim,
 feature, audience, and offer in the original and confirm each survived the rewrite,

@@ -36,12 +36,24 @@ is a service you ask for.
    touch text inside quotes or code, so a word being quoted as an example survives.
    You do not rewrite these by hand; the engine owns them.
 
-3. **Rewrite the judgment items.** Read the worklist. For each item, apply its
-   instruction in the target voice (see `voice-profiles.md`). This is where the
-   real work is: splitting a 50-word sentence, naming a vague authority, killing a
-   copula-avoidance ("serves as" to "is"), un-burying a claim, defining an acronym.
-   Rewrite for BOTH axes at once. A sentence can read less like a bot and still be
-   unreadable; fix both.
+3. **Rewrite — patch a little, rebuild a lot.** The worklist tells you WHAT is
+   wrong. How you fix it depends on how much is wrong.
+
+   - **Light draft (LOW/MEDIUM, a few scattered flags):** patch in place. Apply each
+     worklist instruction in the target voice — split the 50-word sentence, name the
+     vague authority, kill the copula-avoidance ("serves as" to "is").
+
+   - **Heavy draft (HIGH/CRITICAL, or templated marketing / AI copy): rebuild it.**
+     Do NOT edit the draft span by span. Read the worklist as a diagnosis of what's
+     wrong, then set the draft aside and write the piece fresh from its brief, in the
+     target voice, as if a person wrote it from scratch. You are free — expected — to
+     change the skeleton: dissolve bullet lists into flowing prose, open on a concrete
+     scene instead of a mission statement, reorder, cut a section. Patching a heavy
+     draft only swaps the words while keeping the corporate shape, and the shape is
+     half the slop. The best rewrites rebuild; they do not renovate.
+
+   Either way, rewrite for BOTH axes at once, keep every element of the brief
+   (fidelity), and invent nothing.
 
 4. **Re-scan.** Run the plain scan on your rewrite. Report before and after for
    AI-Slop and Comprehension. If either axis did not improve, or either is still
@@ -114,6 +126,16 @@ The rest, in order of leverage:
   statement.
 - **Break the parallel-clause reflex.** "You connect. You get. You reach." is
   corporate. Turn at least one item into a sentence with texture.
+- **Dissolve the template.** A bulleted feature list, a "What you get:" header, a
+  "three ways" setup — that is the corporate skeleton, and it reads as slop even
+  after the words are clean. Turn it into flowing prose. Rewrites that read fully
+  human carry almost no bullets; the ones that read like a template keep the list
+  and just swap the words inside it.
+- **Cut to the bone.** A rebuild is a chance to get shorter, not longer. If the
+  original made a point in one line, don't spend a paragraph on it. Tight reads
+  human; long reads like padding to sound substantial. A good rewrite is usually
+  shorter than the slop it replaces — the strongest ones say it in a third fewer
+  words. When in doubt, cut the sentence you're proudest of.
 - **Pick the warmest voice that fits.** Default to warm or conversational. Reach for
   "professional" only when the context truly needs distance. Stiffness is a failure
   mode, not a safe default.
