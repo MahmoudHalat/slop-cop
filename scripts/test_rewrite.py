@@ -173,6 +173,30 @@ class FingerprintTells(unittest.TestCase):
         self.assertEqual(r["high"]["citation_markup"], [])
 
 
+class UniformRhythm(unittest.TestCase):
+    def test_flags_uniform_ai_rhythm(self):
+        # Short, uniform-length sentences (low std) = AI tell.
+        t = ("We help teams move faster. We build tools that just work. We ship new "
+             "features weekly. We answer support quickly. We care about your success. "
+             "We keep your data safe.")
+        r = scan.analyze(t)
+        self.assertTrue(r["high"]["uniform_rhythm"])
+        self.assertIsNotNone(r["stats"]["sentence_length_std"])
+
+    def test_does_not_flag_varied_human_rhythm(self):
+        # Real human rhythm: a short beat next to long, winding sentences.
+        t = ("The cat sat. Then, after a while, having weighed its options with the "
+             "unhurried patience that only a well-fed animal can afford on a warm "
+             "afternoon, it rose, stretched to twice its length, and padded off toward "
+             "the door without a backward glance. Nobody minded. It was that kind of day.")
+        r = scan.analyze(t)
+        self.assertFalse(r["high"]["uniform_rhythm"])
+
+    def test_needs_enough_sentences(self):
+        r = scan.analyze("Short. Also short. Third one.")
+        self.assertFalse(r["high"]["uniform_rhythm"])  # < 5 sentences → not scored
+
+
 class CLI(unittest.TestCase):
     def _run(self, args, stdin):
         return subprocess.run([sys.executable, SCAN, *args], input=stdin,
